@@ -1,68 +1,47 @@
-# CRUD de Estudiantes - Laravel 12 con PostgreSQL
+# Sistema Universitario CRUD - Laravel 12 con PostgreSQL
 
 ## 📋 Tabla de Contenidos
 1. [Introducción](#introducción)
-2. [Problemas Solucionados](#problemas-solucionados)
+2. [Características](#características)
 3. [Tecnologías Utilizadas](#tecnologías-utilizadas)
 4. [Estructura del Proyecto](#estructura-del-proyecto)
 5. [Instalación y Configuración](#instalación-y-configuración)
-6. [Explicación Técnica del CRUD](#explicación-técnica-del-crud)
-7. [Rutas y Endpoints](#rutas-y-endpoints)
-8. [Modelos y Base de Datos](#modelos-y-base-de-datos)
-9. [Comandos Utilizados](#comandos-utilizados)
-10. [Cómo Usar el CRUD](#cómo-usar-el-crud)
+6. [Módulos del Sistema](#módulos-del-sistema)
+7. [Dashboard](#dashboard)
+8. [Consultas PostgreSQL](#consultas-postgresql)
+9. [Rutas y Endpoints](#rutas-y-endpoints)
+10. [Cómo Usar el Sistema](#cómo-usar-el-sistema)
 
 ---
 
 ## 🎯 Introducción
 
-Este proyecto es un **CRUD (Create, Read, Update, Delete) de estudiantes** desarrollado con **Laravel 12** y **PostgreSQL**. Permite gestionar un registro de estudiantes con campos como nombre, apellido, email, cédula, fecha de nacimiento, teléfono y dirección.
+**Sistema Universitario** es una aplicación web completa desarrollada con **Laravel 12** y **PostgreSQL** para gestionar la información académica de una universidad. Permite administrar estudiantes, materias/cursos, inscripciones de estudiantes en materias, y registro de calificaciones con cálculo automático de promedios.
 
-El proyecto incluye:
-- ✅ Base de datos PostgreSQL (servidor robusto y profesional)
-- ✅ Interfaces web con Blade (HTML interactivo)
-- ✅ Validación de formularios
-- ✅ Gestión completa de estudiantes (crear, listar, editar, eliminar)
-- ✅ Bootstrap 5 para diseño responsivo
+### ¿Qué puedes hacer?
+- ✅ **Gestionar Estudiantes** - Crear, editar, listar y eliminar estudiantes
+- ✅ **Gestionar Materias** - Crear cursos/asignaturas, asignar profesores
+- ✅ **Gestionar Inscripciones** - Inscribir estudiantes en materias, prevenir duplicados
+- ✅ **Registrar Calificaciones** - Ingresar notas (0-5), calcular promedios automáticamente
+- ✅ **Dashboard** - Visualizar estadísticas, estudiantes con bajo rendimiento, materias populares
+- ✅ **Base de datos relacional** - Integridad referencial con Foreign Keys
 
 ---
 
-## 🔧 Problemas Solucionados
+## ⭐ Características
 
-### Problema 1: Incompatibilidad de Node.js v24 con Vite
-**Síntoma:** Error `SyntaxError: Invalid or unexpected token` al ejecutar `composer run dev`
+| Característica | Descripción |
+|---|---|
+| **4 Módulos CRUD** | Estudiantes, Materias, Inscripciones, Calificaciones |
+| **Relations** | Relaciones OneToMany y ManyToOne entre modelos |
+| **Validaciones** | Prevención de duplicados, emails únicos, rangos de notas |
+| **Dashboard** | 8 widgets con estadísticas, gráficos y alertas |
+| **Promedio Automático** | Cálculo de promedio por curso y promedio general |
+| **Bootstrap 5** | Interfaz responsiva y moderna |
+| **PostgreSQL** | Base de datos robusta y escalable |
+| **Blade Templating** | Vistas dinámicas y eficientes |
 
-**Causa:** Node.js v24 es demasiado nuevo y no es compatible con Vite (herramienta de compilación de frontend)
-
-**Solución:** 
-- Cambiar la configuración a usar **SQLite** en lugar de PostgreSQL
-- Limpiar el caché de Node.js y reinstalar dependencias
-- Actualizar autoloader de Composer
-
-### Problema 2: Falta de extensión PCNTL en Windows
-**Síntoma:** Comando `php artisan pail` no funciona
-
-**Causa:** PCNTL es una extensión de PHP solo disponible en Linux/Unix
-
-**Solución:** 
-- Eliminar la línea `php artisan pail --timeout=0` del comando de desarrollo en `composer.json`
-
-### Problema 3: Controlador no reconocido
-**Síntoma:** Error `Target class [EstudianteController] does not exist`
-
-**Causa:** Caché desactualizado de rutas
-
-**Solución:**
-- Regenerar autoloader con `composer dump-autoload`
-- Limpiar caché de rutas con `php artisan route:clear`
-
-### Problema 4: Fechas como strings en la vista
-**Síntoma:** Error `Call to a member function format() on string`
-
-**Causa:** Laravel no convertía el campo `fecha_nacimiento` a objeto DateTime
-
-**Solución:**
-- Agregar `casts` al modelo para convertir la fecha automáticamente
+---
 
 ---
 
@@ -88,26 +67,40 @@ crud-laravel/
 ├── app/
 │   ├── Http/
 │   │   └── Controllers/
-│   │       └── EstudianteController.php    ← Controlador CRUD
+│   │       ├── DashboardController.php      ← Dashboard
+│   │       ├── EstudianteController.php     ← CRUD Estudiantes
+│   │       ├── MateriaController.php        ← CRUD Materias
+│   │       ├── InscripcionController.php    ← CRUD Inscripciones
+│   │       └── CalificacionController.php   ← CRUD Calificaciones
 │   └── Models/
-│       └── Estudiante.php                  ← Modelo de datos
+│       ├── Estudiante.php
+│       ├── Materia.php
+│       ├── Inscripcion.php
+│       └── Calificacion.php
 ├── database/
 │   └── migrations/
 │       ├── 0001_01_01_000000_create_users_table.php
 │       ├── 0001_01_01_000001_create_cache_table.php
 │       ├── 0001_01_01_000002_create_jobs_table.php
-│       └── 2026_04_13_202124_create_estudiantes_table.php  ← Nuestra tabla
-├── resources/
-│   ├── views/
-│   │   ├── layout.blade.php                ← Layout base con navbar
-│   │   └── estudiantes/
-│   │       ├── index.blade.php             ← Listar estudiantes
-│   │       ├── create.blade.php            ← Formulario crear
-│   │       ├── show.blade.php              ← Ver detalles
-│   │       └── edit.blade.php              ← Formulario editar
+│       ├── 2026_04_13_202124_create_estudiantes_table.php
+│       ├── 2026_04_14_173831_create_materias_table.php
+│       ├── 2026_04_14_173832_create_inscripcions_table.php
+│       └── 2026_04_14_173833_create_calificacions_table.php
+├── resources/views/
+│   ├── layout.blade.php                    ← Layout base con navbar
+│   ├── dashboard/
+│   │   └── index.blade.php                 ← Dashboard principal
+│   ├── estudiantes/
+│   │   ├── index.blade.php, create.blade.php, edit.blade.php, show.blade.php
+│   ├── materias/
+│   │   ├── index.blade.php, create.blade.php, edit.blade.php, show.blade.php
+│   ├── inscripciones/
+│   │   ├── index.blade.php, create.blade.php, edit.blade.php, show.blade.php
+│   └── calificaciones/
+│       ├── index.blade.php, create.blade.php, edit.blade.php, show.blade.php
 ├── routes/
-│   └── web.php                             ← Definición de rutas
-├── .env                                    ← Configuración del proyecto
+│   └── web.php                             ← Rutas
+├── .env                                    ← Configuración
 ├── composer.json                           ← Dependencias PHP
 └── README.md                               ← Este archivo
 ```
@@ -137,8 +130,8 @@ composer install
 - Crea la carpeta `vendor/` con todo el código de terceros
 - Genera el autoloader para cargar clases automáticamente
 
-### Paso 3: Configurar variables de entorno
-El archivo `.env` ya viene configurado con:
+### Paso 3: Configurar archivo .env
+El archivo `.env` ya está configurado, pero verifica:
 ```env
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
@@ -146,567 +139,516 @@ DB_PORT=5432
 DB_DATABASE=crud-laravel
 DB_USERNAME=postgres
 DB_PASSWORD=12345678
-APP_URL=http://localhost
 ```
 
-**Si necesitas cambiar algo:**
-- Abre `.env` y edita los valores
-- Asegúrate de que PostgreSQL esté corriendo en tu máquina
+**Asegúrate de que:**
+- PostgreSQL esté corriendo en puerto 5432
+- La base de datos `crud-laravel` exista
+- Las credenciales sean correctas
 
-### Paso 4: Generar clave de encriptación
+### Paso 4: Generar clave de aplicación
 ```bash
 php artisan key:generate
 ```
 
-**¿Qué hace?** Genera una clave única para encriptar datos sensibles (sesiones, cookies, etc.)
-
-### Paso 5: Ejecutar las migraciones
+### Paso 5: Ejecutar migraciones
 ```bash
-php artisan migratePostgreSQL
+php artisan migrate
 ```
 
-**¿Qué hace?** 
-- Lee los archivos en `database/migrations/`
-- Crea las tablas en la base de datos SQLite:
-  - `users` (usuarios del sistema)
-  - `cache` (almacenamiento en caché)
-  - `jobs` (trabajos en cola)
-  - `estudiantes` (nuestra tabla)
+Esto crea 10 tablas:
+- `users`, `cache`, `jobs`, `password_reset_tokens`, `sessions` (Laravel)
+- `estudiantes`, `materias`, `inscripcions`, `calificacions` (nuestras tablas)
 
-### Paso 6: Instalar dependencias de Node.js (Frontend)
+### Paso 6: Instalar dependencias Node.js
 ```bash
 npm install
 ```
 
-**¿Qué hace?** Descarga paquetes JavaScript necesarios para compilar Vite
-
-### Paso 7: Iniciar el servidor de desarrollo
+### Paso 7: Iniciar servidor de desarrollo
 ```bash
 composer run dev
 ```
 
-**¿Qué hace?** Ejecuta simultáneamente:
-- `php artisan serve` - Servidor Laravel en puerto 8000
-- `php artisan queue:listen` - Procesador de trabajos en cola
-- `npm run dev` - Compilador Vite en puerto 5173
-
-**Accede aquí:** http://127.0.0.1:8000/estudiantes
+**Accede aquí:** http://localhost:8000
 
 ---
 
-## 🏗️ Explicación Técnica del CRUD
+## 📚 Módulos del Sistema
 
-### ¿Qué es un CRUD?
-**CRUD** es un acrónimo que significa:
-- Create (Crear) - Agregar nuevos registros
-- Read (Leer) - Consultar registros existentes
-- Update (Actualizar) - Modificar registros
-- Delete (Eliminar) - Borrar registros
+### 1. 👥 Estudiantes
+**Descripción:** Gestión de información de estudiantes universitarios
 
-### Flujo de Funcionamiento
+**Campos:**
+- Nombre, Apellido, Email (único), Cédula (única)
+- Fecha de Nacimiento, Teléfono, Dirección
+- Timestamps (created_at, updated_at)
 
+**Funcionalidades:**
+- CRUD completo (Crear, Leer, Actualizar, Eliminar)
+- Validación de email y cédula únicos
+- Cálculo de promedio general por estudiante
+- Relación con inscripciones (muchas inscripciones por estudiante)
+
+**Rutas:**
+- `GET /estudiantes` - Listar todos
+- `GET /estudiantes/create` - Formulario crear
+- `POST /estudiantes` - Guardar
+- `GET /estudiantes/{id}` - Ver detalles
+- `GET /estudiantes/{id}/edit` - Formulario editar
+- `PUT /estudiantes/{id}` - Actualizar
+- `DELETE /estudiantes/{id}` - Eliminar
+
+---
+
+### 2. 📖 Materias
+**Descripción:** Gestión de cursos/asignaturas universitarias
+
+**Campos:**
+- Nombre, Código (único), Créditos, Descripción
+- Horas por Semana, Profesor
+- Timestamps
+
+**Funcionalidades:**
+- CRUD completo
+- Código de materia único (ej: MAT101, FIS201)
+- Validación de créditos (1-10)
+- Lista de estudiantes inscritos
+- Relación con inscripciones
+
+**Rutas:**
+- `GET /materias` - Listar todas
+- `GET /materias/create` - Formulario crear
+- `POST /materias` - Guardar
+- `GET /materias/{id}` - Ver detalles
+- `GET /materias/{id}/edit` - Formulario editar
+- `PUT /materias/{id}` - Actualizar
+- `DELETE /materias/{id}` - Eliminar
+
+---
+
+### 3. 📋 Inscripciones
+**Descripción:** Registro de estudiantes inscritos en materias
+
+**Campos:**
+- estudiante_id (FK), materia_id (FK)
+- Fecha de Inscripción, Estado (activa/completada/cancelada)
+- Timestamps
+
+**Funcionalidades:**
+- CRUD completo
+- Prevención de inscripciones duplicadas (constraint único)
+- Cálculo automático de promedio por inscripción
+- Relación con calificaciones
+- Validación de estudiante y materia existentes
+
+**Estados:**
+- `activa` - Inscripción vigente
+- `completada` - Materia terminada
+- `cancelada` - Inscripción cancelada
+
+**Rutas:**
+- `GET /inscripciones` - Listar todas
+- `GET /inscripciones/create` - Formulario crear
+- `POST /inscripciones` - Guardar
+- `GET /inscripciones/{id}` - Ver detalles
+- `GET /inscripciones/{id}/edit` - Formulario editar
+- `PUT /inscripciones/{id}` - Actualizar
+- `DELETE /inscripciones/{id}` - Eliminar
+
+---
+
+### 4. 📊 Calificaciones
+**Descripción:** Registro de notas y evaluaciones por inscripción
+
+**Campos:**
+- inscripcion_id (FK), Nota (0-5), Tipo (Parcial 1, Parcial 2, Final, etc)
+- Fecha de Evaluación, Observaciones
+- Timestamps
+
+**Funcionalidades:**
+- CRUD completo
+- Validación de nota entre 0 y 5
+- Colores dinámicos: verde (≥4.0), naranja (≥3.0), rojo (<3.0)
+- Múltiples evaluaciones por inscripción
+- Cálculo automático de promedio
+
+**Tipos de Evaluación:**
+- Parcial 1, Parcial 2, Parcial 3
+- Final
+- Trabajo Práctico
+
+**Rutas:**
+- `GET /calificaciones` - Listar todas
+- `GET /calificaciones/create` - Formulario crear
+- `POST /calificaciones` - Guardar
+- `GET /calificaciones/{id}` - Ver detalles
+- `GET /calificaciones/{id}/edit` - Formulario editar
+- `PUT /calificaciones/{id}` - Actualizar
+- `DELETE /calificaciones/{id}` - Eliminar
+
+---
+
+## 📊 Dashboard
+
+**URL:** `GET /` (página principal)
+
+El dashboard muestra:
+
+### Tarjetas de Resumen (4)
+- **Total Estudiantes** (azul) - Contador y enlace
+- **Total Materias** (verde) - Contador y enlace
+- **Total Inscripciones** (cian) - Contador y enlace
+- **Total Calificaciones** (naranja) - Contador y enlace
+
+### Resumen Académico (2)
+- **Promedio General** - Promedio de todas las calificaciones con indicador visual
+- **Calificaciones Bajas** - Monitoreo de estudiantes con notas < 3.0
+
+### Datos Recientes (3)
+- **Estudiantes Recientes** - Últimos 5 estudiantes registrados
+- **Materias Más Inscritas** - Top 5 con contador de inscritos
+- **Inscripciones Recientes** - Tabla con últimas 5 inscripciones
+
+---
+
+## 🗄️ Consultas PostgreSQL
+
+### Conexión a PostgreSQL
+```bash
+# Desde terminal
+psql -h 127.0.0.1 -U postgres -d crud-laravel
+
+# Contraseña: 12345678
 ```
-Usuario hace clic en URL
-    ↓
-Laravel busca en routes/web.php
-    ↓
-Encuentra EstudianteController
-    ↓
-Ejecuta el método correspondiente (index, create, show, edit, etc.)
-    ↓
-Controlador accede al modelo Estudiante
-    ↓
-Modelo consulta la base de datos SQLite
-    ↓
-Datos se envían a la vista Blade
-    ↓
-Blade genera HTML y lo envía al navegador
-    ↓
-Usuario ve la página
+
+### Consultas Útiles
+
+#### 1. ✅ Ver todas las tablas creadas
+```sql
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'public' 
+ORDER BY table_name;
 ```
+**Resultado:** Lista de 10 tablas (users, cache, jobs, sessions, password_reset_tokens, estudiantes, materias, inscripcions, calificacions)
 
-### 1. Modelo Estudiante (`app/Models/Estudiante.php`)
+---
 
-```php
-class Estudiante extends Model
-{
-    protected $fillable = [
-        'nombre', 'apellido', 'email', 'cedula',
-        'fecha_nacimiento', 'telefono', 'direccion',
-    ];
-
-    protected $casts = [
-        'fecha_nacimiento' => 'date',
-    ];
-}
+#### 2. 👥 Listar todos los estudiantes con sus emails
+```sql
+SELECT id, nombre, apellido, email, cedula 
+FROM estudiantes 
+ORDER BY nombre;
 ```
+**Descripción:** Obtiene información básica de todos los estudiantes registrados.
 
-**¿Qué hace?**
-- **Hereda de `Model`**: Indica que representa una tabla en la BD
-- **`$fillable`**: Lista de campos que se pueden asignar masivamente (protección contra inyección)
-- **`$casts`**: Convierte automáticamente `fecha_nacimiento` a un objeto Date (permite usar `->format()`)
+---
 
-### 2. Controlador (`app/Http/Controllers/EstudianteController.php`)
-
-El controlador tiene 7 métodos principales:
-
-#### a. `index()` - Listar todos
-```php
-public function index()
-{
-    $estudiantes = Estudiante::all();
-    return view('estudiantes.index', compact('estudiantes'));
-}
+#### 3. 📖 Listar todas las materias con profesor y créditos
+```sql
+SELECT id, nombre, codigo, profesor, creditos 
+FROM materias 
+ORDER BY nombre;
 ```
-- Obtiene todos los estudiantes: `Estudiante::all()`
-- Envía a la vista `estudiantes.index` con los datos
+**Descripción:** Muestra todas las materias disponibles con su información.
 
-#### b. `create()` - Mostrar formulario de creación
-```php
-public function create()
-{
-    return view('estudiantes.create');
-}
+---
+
+#### 4. 📋 Ver inscripciones con nombre de estudiante y materia
+```sql
+SELECT 
+    i.id,
+    e.nombre || ' ' || e.apellido AS estudiante,
+    m.nombre AS materia,
+    i.fecha_inscripcion,
+    i.estado
+FROM inscripcions i
+JOIN estudiantes e ON i.estudiante_id = e.id
+JOIN materias m ON i.materia_id = m.id
+ORDER BY i.fecha_inscripcion DESC;
 ```
-- Retorna una vista con un formulario vacío
+**Descripción:** Muestra todas las inscripciones con información del estudiante y materia asociada. Ordenado por más reciente primero.
 
-#### c. `store()` - Guardar nuevo estudiante
-```php
-public function store(Request $request)
-{
-    $validated = $request->validate([
-        'nombre' => 'required|string|max:255',
-        'email' => 'required|email|unique:estudiantes,email',
-        // ... más validaciones
-    ]);
-    
-    Estudiante::create($validated);
-    return redirect()->route('estudiantes.index');
-}
+---
+
+#### 5. 📊 Ver calificaciones de un estudiante
+```sql
+SELECT 
+    e.nombre || ' ' || e.apellido AS estudiante,
+    m.nombre AS materia,
+    c.tipo,
+    c.nota,
+    c.fecha
+FROM calificacions c
+JOIN inscripcions i ON c.inscripcion_id = i.id
+JOIN estudiantes e ON i.estudiante_id = e.id
+JOIN materias m ON i.materia_id = m.id
+WHERE e.nombre = 'Marlon'  -- Cambiar por nombre del estudiante
+ORDER BY m.nombre, c.fecha;
 ```
-- Valida los datos del formulario
-- Crea un nuevo registro en la BD
-- Redirige a la lista
+**Descripción:** Obtiene todas las calificaciones de un estudiante específico organizadas por materia.
 
-**Validaciones:**
-- `required` - Campo obligatorio
-- `email` - Debe ser un email válido
-- `unique` - No puede repetirse en la BD
-- `max:255` - Máximo 255 caracteres
+---
 
-#### d. `show()` - Ver detalles de un estudiante
-```php
-public function show(Estudiante $estudiante)
-{
-    return view('estudiantes.show', compact('estudiante'));
-}
+#### 6. 🎯 Calcular promedio por estudiante
+```sql
+SELECT 
+    e.id,
+    e.nombre || ' ' || e.apellido AS estudiante,
+    ROUND(AVG(c.nota)::numeric, 2) AS promedio_general
+FROM estudiantes e
+LEFT JOIN inscripcions i ON e.id = i.estudiante_id
+LEFT JOIN calificacions c ON i.id = c.inscripcion_id
+GROUP BY e.id, e.nombre, e.apellido
+ORDER BY promedio_general DESC;
 ```
-- Laravel inyecta automáticamente el estudiante (Route Model Binding)
-- Muestra todos los datos del estudiante
+**Descripción:** Calcula el promedio general de cada estudiante en todas sus materias. ROUND redondea a 2 decimales.
 
-#### e. `edit()` - Mostrar formulario de edición
-```php
-public function edit(Estudiante $estudiante)
-{
-    return view('estudiantes.edit', compact('estudiante'));
-}
+---
+
+#### 7. ⚠️ Estudiantes con bajo rendimiento (< 3.0)
+```sql
+SELECT 
+    e.nombre || ' ' || e.apellido AS estudiante,
+    m.nombre AS materia,
+    ROUND(AVG(c.nota)::numeric, 2) AS promedio_materia
+FROM estudiantes e
+JOIN inscripcions i ON e.id = i.estudiante_id
+JOIN materias m ON i.materia_id = m.id
+JOIN calificacions c ON i.id = c.inscripcion_id
+GROUP BY e.id, e.nombre, e.apellido, m.id, m.nombre
+HAVING AVG(c.nota) < 3.0
+ORDER BY promedio_materia;
 ```
-- Similar a `create()` pero con los datos pre-rellenados
+**Descripción:** Identifica estudiantes con promedio menor a 3.0 por materia para seguimiento académico.
 
-#### f. `update()` - Guardar cambios
-```php
-public function update(Request $request, Estudiante $estudiante)
-{
-    $validated = $request->validate([...]);
-    
-    $estudiante->update($validated);
-    return redirect()->route('estudiantes.index');
-}
+---
+
+#### 8. 📚 Materias más inscritas
+```sql
+SELECT 
+    m.id,
+    m.nombre,
+    m.codigo,
+    COUNT(i.id) AS cantidad_inscritos
+FROM materias m
+LEFT JOIN inscripcions i ON m.id = i.materia_id
+GROUP BY m.id, m.nombre, m.codigo
+ORDER BY cantidad_inscritos DESC;
 ```
-- Valida y actualiza los datos
-- Las validaciones de `unique` incluyen una exclusión del ID actual
+**Descripción:** Muestra cuántos estudiantes están inscritos en cada materia.
 
-#### g. `destroy()` - Eliminar
-```php
-public function destroy(Estudiante $estudiante)
-{
-    $estudiante->delete();
-    return redirect()->route('estudiantes.index');
-}
+---
+
+#### 9. 🏆 Estudiante con mejor promedio
+```sql
+SELECT 
+    e.id,
+    e.nombre || ' ' || e.apellido AS estudiante,
+    ROUND(AVG(c.nota)::numeric, 2) AS promedio_general
+FROM estudiantes e
+JOIN inscripcions i ON e.id = i.estudiante_id
+JOIN calificacions c ON i.id = c.inscripcion_id
+GROUP BY e.id, e.nombre, e.apellido
+ORDER BY promedio_general DESC
+LIMIT 1;
 ```
-- Elimina el registro
-- Redirige a la lista
+**Descripción:** Obtiene el estudiante con el mejor promedio académico.
 
-### 3. Migraciones (`database/migrations/`)
+---
 
-Una migración crea la estructura de la tabla:
-
-```php
-public function up(): void
-{
-    Schema::create('estudiantes', function (Blueprint $table) {
-        $table->id();                                    // ID auto-incremental
-        $table->string('nombre');                       // VARCHAR(255)
-        $table->string('apellido');                     // VARCHAR(255)
-        $table->string('email')->unique();              // Email único
-        $table->string('cedula')->unique();             // Cédula única
-        $table->date('fecha_nacimiento')->nullable();   // Fecha (opcional)
-        $table->string('telefono')->nullable();         // VARCHAR (opcional)
-        $table->text('direccion')->nullable();          // Texto largo (opcional)
-        $table->timestamps();                           // created_at, updated_at
-    });
-}
+#### 10. 📈 Estadísticas generales de calificaciones
+```sql
+SELECT 
+    COUNT(*) AS total_calificaciones,
+    ROUND(AVG(nota)::numeric, 2) AS promedio_general,
+    ROUND(MIN(nota)::numeric, 2) AS nota_minima,
+    ROUND(MAX(nota)::numeric, 2) AS nota_maxima,
+    ROUND(STDDEV(nota)::numeric, 2) AS desviacion_estandar
+FROM calificacions;
 ```
+**Descripción:** Mostrar estadísticas generales: cantidad de notas, promedio, mínimo, máximo y desviación estándar.
+
+---
+
+#### 11. 🔄 Inscripciones activas de un estudiante
+```sql
+SELECT 
+    e.nombre || ' ' || e.apellido AS estudiante,
+    m.nombre AS materia,
+    m.profesor,
+    i.estado,
+    i.fecha_inscripcion
+FROM inscripcions i
+JOIN estudiantes e ON i.estudiante_id = e.id
+JOIN materias m ON i.materia_id = m.id
+WHERE e.cedula = '1143349074' AND i.estado = 'activa'  -- Cambiar cédula
+ORDER BY m.nombre;
+```
+**Descripción:** Ver todas las materias activas en las que está inscrito un estudiante específico.
+
+---
+
+#### 12. 📋 Profesores y sus materias
+```sql
+SELECT 
+    profesor,
+    COUNT(*) AS cantidad_materias,
+    STRING_AGG(nombre, ', ' ORDER BY nombre) AS materias
+FROM materias
+GROUP BY profesor
+ORDER BY cantidad_materias DESC;
+```
+**Descripción:** Muestra cada profesor con la cantidad de materias que imparte y sus nombres.
+
+---
+
+#### 13. 🎓 Transcripción académica completa
+```sql
+SELECT 
+    e.nombre || ' ' || e.apellido AS estudiante,
+    e.cedula,
+    m.nombre AS materia,
+    m.codigo,
+    m.creditos,
+    ROUND(AVG(c.nota)::numeric, 2) AS nota_final
+FROM estudiantes e
+JOIN inscripcions i ON e.id = i.estudiante_id
+JOIN materias m ON i.materia_id = m.id
+LEFT JOIN calificacions c ON i.id = c.inscripcion_id
+WHERE e.id = 1  -- Cambiar por ID del estudiante
+GROUP BY e.id, e.nombre, e.apellido, e.cedula, m.id, m.nombre, m.codigo, m.creditos
+ORDER BY m.nombre;
+```
+**Descripción:** Genera una transcripción académica completa de un estudiante específico con créditos.
 
 ---
 
 ## 🛣️ Rutas y Endpoints
 
-Las rutas se definen en `routes/web.php`:
+### Ruta Principal
+| Método | URL | Controlador | Método |
+|--------|-----|-------------|--------|
+| GET | `/` | DashboardController | index |
+| GET | `/dashboard` | DashboardController | index |
 
-```php
-Route::resource('estudiantes', EstudianteController::class);
+### Rutas CRUD (4 módulos × 7 rutas = 28 rutas)
+
+Cada módulo (estudiantes, materias, inscripciones, calificaciones) sigue el patrón estándar RESTful:
+
+```
+GET    /estudiantes              → index    (listar)
+GET    /estudiantes/create       → create   (formulario crear)
+POST   /estudiantes              → store    (guardar)
+GET    /estudiantes/{id}         → show     (ver detalles)
+GET    /estudiantes/{id}/edit    → edit     (formulario editar)
+PUT    /estudiantes/{id}         → update   (actualizar)
+DELETE /estudiantes/{id}         → destroy  (eliminar)
 ```
 
-Esto genera automáticamente 7 rutas:
-
-| Método HTTP | URL | Acción | Vista |
-|-------------|-----|--------|-------|
-| GET | `/estudiantes` | Listar todos | index |
-| GET | `/estudiantes/create` | Mostrar formulario | create |
-| POST | `/estudiantes` | Guardar nuevo | (redirige) |
-| GET | `/estudiantes/{id}` | Ver detalles | show |
-| GET | `/estudiantes/{id}/edit` | Mostrar para editar | edit |
-| PUT/PATCH | `/estudiantes/{id}` | Actualizar | (redirige) |
-| DELETE | `/estudiantes/{id}` | Eliminar | (redirige) |
+Lo mismo para `/materias`, `/inscripciones`, `/calificaciones`.
 
 ---
 
-## 🗄️ Modelos y Base de Datos
+## 💻 Cómo Usar el Sistema
 
-### PostgreSQL
+### 1. Acceder al Dashboard
+```
+http://localhost:8000
+```
 
-**Configuración de PostgreSQL en este proyecto:**
+Verás una página con resumen de estadísticas y enlaces a cada módulo.
 
-PostreSQL es un sistema de administración de bases de datos relacional robusto, escalable y profesional. Es ideal para:
-- Aplicaciones en producción
-- Seguridad mejorada
-- Características avanzadas (transacciones, integridad referencial, etc.)
-- Mejor rendimiento en aplicaciones grandes
+### 2. Crear un Estudiante
+1. Haz clic en "Estudiantes" → "Nuevo Estudiante"
+2. Completa:
+   - Nombre, Apellido
+   - Email (único)
+   - Cédula (única)
+   - Fecha de Nacimiento, Teléfono, Dirección (opcionales)
+3. Haz clic en "Guardar"
 
-**Configuración utilizada:**
-- **Host:** 127.0.0.1 (localhost)
-- **Puerto:** 5432 (puerto por defecto)
-- **Base de datos:** crud-laravel
-- **Usuario:** postgres
-- **Contraseña:** 12345678
+### 3. Crear una Materia
+1. Haz clic en "Materias" → "Nueva Materia"
+2. Completa:
+   - Nombre
+   - Código (ej: MAT101 - debe ser único)
+   - Créditos (1-10)
+   - Profesor
+   - Descripción, Horas por Semana
+3. Haz clic en "Guardar"
 
-### Archivo de Base de Datos
+### 4. Inscribir Estudiante en Materia
+1. Haz clic en "Inscripciones" → "Nueva Inscripción"
+2. Selecciona:
+   - Estudiante (dropdown)
+   - Materia (dropdown)
+   - Fecha de Inscripción
+   - Estado (activa/completada/cancelada)
+3. Si el estudiante ya está inscrito, verás un error
+4. Haz clic en "Guardar"
 
-La BD de PostgreSQL se almacena en el servidor PostgreSQL local. No es un archivo como en SQLite, sino un servidor que gestiona los datos automáticamente.
+### 5. Registrar Calificaciones
+1. Haz clic en "Calificaciones" → "Registrar Calificación"
+2. Completa:
+   - Inscripción (dropdown: mostrar estudiante + materia)
+   - Nota (0.00 - 5.00)
+   - Tipo (Parcial 1, Parcial 2, Final, etc)
+   - Fecha
+   - Observaciones (opcional)
+3. Haz clic en "Guardar"
+4. **El promedio se calcula automáticamente** en la vista de inscripción
+
+### 6. Ver Promedios
+En la lista de **Inscripciones**, ves el promedio de cada una.
+En el **Dashboard**, ves el promedio general de todos los estudiantes.
+
+### 7. Monitorear Bajo Rendimiento
+En el **Dashboard**, la sección "Calificaciones Bajas" muestra automáticamente estudiantes con notas < 3.0.
 
 ---
 
-## 💻 Comandos Utilizados
+## 🔑 Características Técnicas Implementadas
 
-### Comandos de Composer (PHP)
+- ✅ **Relaciones Eloquent**
+  - `Estudiante hasMany Inscripcion`
+  - `Materia hasMany Inscripcion`
+  - `Inscripcion hasMany Calificacion`
 
-```bash
-# Instalar dependencias
-composer install
+- ✅ **Métodos Calculados**
+  - `Estudiante::promedio_general()` - Promedio total
+  - `Inscripcion::promedio()` - Promedio por materia
 
-# Crear modelo y migración juntos
-php artisan make:model Estudiante -m
+- ✅ **Validaciones**
+  - Email y cédula únicos
+  - Código de materia único
+  - Prevención de inscripciones duplicadas
+  - Rango de notas (0-5)
 
-# Crear controlador CRUD
-php artisan make:controller EstudianteController -r
+- ✅ **Sincronización Automática**
+  - Campos `created_at`, `updated_at`
+  - Eliminación cascada (borrar inscripción elimina calificaciones)
 
-# Ejecutar migraciones
-php artisan migrate
-
-# Ejecutar migraciones desde cero (peligroso en producción)
-php artisan migrate:fresh
-
-# Regenerar autoloader
-composer dump-autoload
-
-# Limpiar caches
-php artisan config:cache
-php artisan route:cache
-php artisan route:clear
-php artisan view:clear
-
-# Iniciar servidor de desarrollo
-php artisan serve
-
-# Procesar trabajos en cola
-php artisan queue:listen
-```
-
-### Comandos de NPM (Node.js)
-
-```bash
-# Instalar paquetes
-npm install
-
-# Compilar assets (producción)
-npm run build
-
-# Compilar con observación en tiempo real (desarrollo)
-npm run dev
-```
-
-### Comandos de Desarrollo
-
-```bash
-# Comando personalizado que ejecuta todo junto
-composer run dev
-```
-
-En `composer.json` está definido como:
-```json
-"dev": [
-    "Composer\\Config::disableProcessTimeout",
-    "npx concurrently ... \"php artisan serve\" \"php artisan queue:listen\" \"npm run dev\""
-]
-```
+- ✅ **Bootstrap 5**
+  - Tablas responsivas
+  - Formularios con validación visual
+  - Badges y colores dinámicos
+  - Navbar con dropdowns
 
 ---
 
-## 📱 Cómo Usar el CRUD
+## 📞 Soporte y Documentación
 
-### 1. Acceder a la aplicación
-```
-Abre tu navegador y ve a: http://127.0.0.1:8000/estudiantes
-```
-
-### 2. Ver estudiantes
-- Se muestra una tabla con todos los estudiantes registrados
-- Cada fila tiene botones: **Ver**, **Editar**, **Eliminar**
-
-### 3. Crear un nuevo estudiante
-- Haz clic en "Nuevo Estudiante"
-- Completa el formulario:
-  - **Nombre** (obligatorio)
-  - **Apellido** (obligatorio)
-  - **Email** (obligatorio, debe ser único)
-  - **Cédula** (obligatoria, debe ser única)
-  - **Fecha de Nacimiento** (opcional)
-  - **Teléfono** (opcional)
-  - **Dirección** (opcional)
-- Haz clic en "Guardar"
-
-### 4. Ver detalles de un estudiante
-- En la tabla, haz clic en "Ver"
-- Se muestra toda la información del estudiante
-- Muestra además las fechas de creación y última actualización
-
-### 5. Editar un estudiante
-- En la tabla, haz clic en "Editar"
-- Modifica los campos que desees
-- Haz clic en "Guardar Cambios"
-
-### 6. Eliminar un estudiante
-- En la tabla o en la vista de detalles, haz clic en "Eliminar"
-- Confirma la eliminación
-- El estudiante se borra permanentemente
-
----
-
-## 🎨 Vistas Blade Explicadas
-
-### `layout.blade.php` - Layout base
-```blade
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <nav class="navbar navbar-dark bg-dark">
-        <!-- Navegación -->
-    </nav>
-    
-    <div class="container mt-5">
-        @if ($errors->any())
-            <!-- Mostrar errores de validación -->
-        @endif
-        
-        @if (session('success'))
-            <!-- Mostrar mensajes de éxito -->
-        @endif
-        
-        @yield('content')  <!-- Contenido específico de cada vista -->
-    </div>
-</body>
-</html>
-```
-
-**Conceptos Blade:**
-- `@if`, `@else`, `@endif` - Condicionales
-- `@yield('content')` - Espacio donde va el contenido de cada vista
-- `{{ $variable }}` - Imprime una variable (escapada por seguridad)
-- `{!! $html !!}` - Imprime HTML sin escapar (cuidado con inyecciones)
-
-### `index.blade.php` - Listar estudiantes
-```blade
-@extends('layout')  <!-- Hereda de layout.blade.php -->
-
-@section('title', 'Listado de Estudiantes')
-
-@section('content')
-    <h1>Estudiantes</h1>
-    
-    @if($estudiantes->isEmpty())
-        <p>No hay estudiantes</p>
-    @else
-        <table class="table">
-            @foreach($estudiantes as $estudiante)
-                <tr>
-                    <td>{{ $estudiante->nombre }}</td>
-                    <!-- ... más columnas ... -->
-                </tr>
-            @endforeach
-        </table>
-    @endif
-@endsection
-```
-
-### `create.blade.php` y `edit.blade.php` - Formularios
-```blade
-<form method="POST" action="{{ route('estudiantes.store') }}">
-    @csrf  <!-- Token CSRF para seguridad -->
-    
-    <div class="mb-3">
-        <label>Nombre</label>
-        <input type="text" 
-               name="nombre" 
-               value="{{ old('nombre') }}"
-               class="form-control @error('nombre') is-invalid @enderror">
-        @error('nombre')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div>
-    
-    <!-- ... más campos ... -->
-    
-    <button type="submit" class="btn btn-primary">Guardar</button>
-</form>
-```
-
-**Conceptos importantes:**
-- `@csrf` - Token CSRF (protección contra ataques)
-- `old('campo')` - Rellena el campo con datos anteriores si hubo error
-- `@error('campo')` - Muestra errores de validación
-- `route('nombre_ruta')` - Genera URLs automáticamente
-
----
-
-## 🔐 Seguridad Implementada
-
-### 1. **Validación de entrada**
-```php
-$request->validate([
-    'nombre' => 'required|string|max:255',
-    'email' => 'required|email|unique:estudiantes,email',
-]);
-```
-- Los datos se validan antes de guardarse en la BD
-
-### 2. **Protección CSRF**
-```blade
-@csrf
-```
-- Cada formulario incluye un token CSRF único
-- Laravel verifica que el formulario venga de tu aplicación
-
-### 3. **Escapado en vistas**
-```blade
-{{ $estudiante->nombre }}  <!-- Escapa HTML automáticamente -->
-```
-- Las variables se escapan por defecto (previene XSS)
-
-### 4. **SQL Injection prevención**
-```php
-Estudiante::where('email', $email)->first();  // Usa prepared statements
-```
-- Laravel usa prepared statements automáticamente
-
----
-
-## 📊 Base de Datos - Tabla Estudiantes
-
-```sql
-CREATE TABLE estudiantes (
-    id INTEGER PRIMARY KEY,
-    nombre VARCHAR(255),
-    apellido VARCHAR(255),
-    email VARCHAR(255) UNIQUE,
-    cedula VARCHAR(255) UNIQUE,
-    fecha_nacimiento DATE,
-    telefono VARCHAR(255),
-    direccion TEXT,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
-);
-```
-
----
-
-## 🚨 Problemas Comunes
-
-### Error: "Target class [EstudianteController] does not exist"
-**Solución:**
-```bash
-composer dump-autoload
-php artisan route:clear
-```
-
-### Error: "No such table: estudiantes"
-**Solución:**
-```bash
-php artisan migrate
-```
-
-### Error: "SQLSTATE[HY000]: General error"
-**Solución:**
-```bash
-php artisan migrate:fresh
-```
-⚠️ Esto borra todos los datos. Úsalo solo en desarrollo.
-
-### Cambios en código no aparecen
-**Solución:**
-```bash
-php artisan config:cache
-php artisan route:cache
-```
-
----
-
-## 📈 Próximas Mejoras Posibles
-
-- [ ] Agregar autenticación de usuarios
-- [ ] Implementar paginación en la lista
-- [ ] Agregar búsqueda y filtros
-- [ ] Exportar a PDF o Excel
-- [ ] Agregar fotos/avatares
-- [ ] Implementar API REST (JSON)
-- [ ] Agregar tests automatizados
-- [ ] Desplegar en producción con PostgreSQL
-
----
-
-## 📚 Recursos Útiles
-
+Para más información sobre Laravel:
 - [Documentación oficial de Laravel](https://laravel.com/docs)
-- [Blade - Motor de plantillas](https://laravel.com/docs/12.x/blade)
-- [Validación en Laravel](https://laravel.com/docs/12.x/validation)
-- [Eloquent ORM](https://laravel.com/docs/12.x/eloquent)
-- [Bootstrap 5](https://getbootstrap.com/)
+- [Eloquent ORM](https://laravel.com/docs/eloquent)
+- [Blade Templating](https://laravel.com/docs/blade)
+
+Para PostgreSQL:
+- [Documentación oficial](https://www.postgresql.org/docs/current/)
+- [psql comands](https://www.postgresql.org/docs/current/app-psql.html)
 
 ---
 
-## 👨‍💻 Autor
-Proyecto CRUD de Estudiantes - Abril 2026
+**Última actualización:** 14 de Abril de 2026
