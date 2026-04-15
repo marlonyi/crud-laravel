@@ -2,88 +2,65 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreEstudianteRequest;
+use App\Http\Requests\UpdateEstudianteRequest;
 use App\Models\Estudiante;
-use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class EstudianteController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct()
     {
-        $estudiantes = Estudiante::all();
-        return view('estudiantes.index', compact('estudiantes'));
+        $this->authorizeResource(Estudiante::class, 'estudiante');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function index(): View
+    {
+        $estudiantes = Estudiante::latest()->paginate(15);
+        return view('estudiantes.modern', compact('estudiantes'));
+    }
+
+    public function create(): View
     {
         return view('estudiantes.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(StoreEstudianteRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'nombre' => 'required|string|max:255',
-            'apellido' => 'required|string|max:255',
-            'email' => 'required|email|unique:estudiantes,email',
-            'cedula' => 'required|string|unique:estudiantes,cedula',
-            'fecha_nacimiento' => 'nullable|date',
-            'telefono' => 'nullable|string|max:20',
-            'direccion' => 'nullable|string|max:500',
-        ]);
-
-        Estudiante::create($validated);
-        return redirect()->route('estudiantes.index')->with('success', 'Estudiante creado exitosamente');
+        Estudiante::create($request->validated());
+        return redirect()->route('estudiantes.index')
+            ->with('success', 'Estudiante creado exitosamente');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Estudiante $estudiante)
+    public function show(Estudiante $estudiante): View
     {
+        $estudiante->load(['inscripciones.materia', 'inscripciones.calificaciones']);
         return view('estudiantes.show', compact('estudiante'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Estudiante $estudiante)
+    public function edit(Estudiante $estudiante): View
     {
         return view('estudiantes.edit', compact('estudiante'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Estudiante $estudiante)
+    public function update(UpdateEstudianteRequest $request, Estudiante $estudiante): RedirectResponse
     {
-        $validated = $request->validate([
-            'nombre' => 'required|string|max:255',
-            'apellido' => 'required|string|max:255',
-            'email' => 'required|email|unique:estudiantes,email,' . $estudiante->id,
-            'cedula' => 'required|string|unique:estudiantes,cedula,' . $estudiante->id,
-            'fecha_nacimiento' => 'nullable|date',
-            'telefono' => 'nullable|string|max:20',
-            'direccion' => 'nullable|string|max:500',
-        ]);
-
-        $estudiante->update($validated);
-        return redirect()->route('estudiantes.index')->with('success', 'Estudiante actualizado exitosamente');
+        $estudiante->update($request->validated());
+        return redirect()->route('estudiantes.index')
+            ->with('success', 'Estudiante actualizado exitosamente');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Estudiante $estudiante)
+    public function destroy(Estudiante $estudiante): RedirectResponse
     {
-        $estudiante->delete();
-        return redirect()->route('estudiantes.index')->with('success', 'Estudiante eliminado exitosamente');
+        try {
+            $estudiante->delete();
+            return redirect()->route('estudiantes.index')
+                ->with('success', 'Estudiante eliminado exitosamente');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'No se puede eliminar el estudiante porque tiene registros relacionados');
+        }
     }
 }

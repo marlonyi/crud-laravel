@@ -3,79 +3,126 @@
 @section('title', 'Dashboard')
 
 @section('content')
-<h1 class="mb-4">Dashboard - Sistema Universitario</h1>
+<!-- Page Header -->
+<div class="page-header animate-fade-in">
+    <div>
+        <h1 class="page-title">
+            <i class="bi bi-speedometer2"></i>
+            Dashboard
+        </h1>
+        <p class="page-subtitle">Sistema Universitario - Panel de Control</p>
+    </div>
+</div>
 
-<!-- Tarjetas de Resumen -->
-<div class="row mb-4">
-    <div class="col-md-3 mb-3">
-        <div class="card bg-primary text-white">
-            <div class="card-body">
-                <h5 class="card-title">Estudiantes</h5>
-                <p class="display-4">{{ $totalEstudiantes }}</p>
-                <a href="{{ route('estudiantes.index') }}" class="btn btn-light btn-sm mt-2">Ver Todos</a>
+<!-- Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="stat-card primary animate-fade-in delay-1">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-card-label">Estudiantes</div>
+                    <div class="stat-card-value">{{ $totalEstudiantes }}</div>
+                </div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
             </div>
+            <a href="{{ route('estudiantes.index') }}" class="btn-modern btn-modern-sm btn-modern-secondary mt-2">
+                Ver todos <i class="bi bi-arrow-right"></i>
+            </a>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card bg-success text-white">
-            <div class="card-body">
-                <h5 class="card-title">Materias</h5>
-                <p class="display-4">{{ $totalMaterias }}</p>
-                <a href="{{ route('materias.index') }}" class="btn btn-light btn-sm mt-2">Ver Todos</a>
+    <div class="col-md-6 col-lg-3">
+        <div class="stat-card success animate-fade-in delay-2">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-card-label">Materias</div>
+                    <div class="stat-card-value">{{ $totalMaterias }}</div>
+                </div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-book-fill"></i>
+                </div>
             </div>
+            <a href="{{ route('materias.index') }}" class="btn-modern btn-modern-sm btn-modern-secondary mt-2">
+                Ver todas <i class="bi bi-arrow-right"></i>
+            </a>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card bg-info text-white">
-            <div class="card-body">
-                <h5 class="card-title">Inscripciones</h5>
-                <p class="display-4">{{ $totalInscripciones }}</p>
-                <a href="{{ route('inscripciones.index') }}" class="btn btn-light btn-sm mt-2">Ver Todos</a>
+    <div class="col-md-6 col-lg-3">
+        <div class="stat-card info animate-fade-in delay-3">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-card-label">Inscripciones</div>
+                    <div class="stat-card-value">{{ $totalInscripciones }}</div>
+                </div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                </div>
             </div>
+            <a href="{{ route('inscripciones.index') }}" class="btn-modern btn-modern-sm btn-modern-secondary mt-2">
+                Ver todas <i class="bi bi-arrow-right"></i>
+            </a>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card bg-warning text-dark">
-            <div class="card-body">
-                <h5 class="card-title">Calificaciones</h5>
-                <p class="display-4">{{ $totalCalificaciones }}</p>
-                <a href="{{ route('calificaciones.index') }}" class="btn btn-dark btn-sm mt-2">Ver Todos</a>
+    <div class="col-md-6 col-lg-3">
+        <div class="stat-card warning animate-fade-in delay-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-card-label">Calificaciones</div>
+                    <div class="stat-card-value">{{ $totalCalificaciones }}</div>
+                </div>
+                <div class="stat-card-icon">
+                    <i class="bi bi-award-fill"></i>
+                </div>
             </div>
+            <a href="{{ route('calificaciones.index') }}" class="btn-modern btn-modern-sm btn-modern-secondary mt-2">
+                Ver todas <i class="bi bi-arrow-right"></i>
+            </a>
         </div>
     </div>
 </div>
 
-<!-- Resumen Académico -->
-<div class="row mb-4">
+<!-- Academic Summary -->
+<div class="row g-3 mb-4">
     <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-secondary text-white">
-                <h5 class="mb-0">📊 Promedio General</h5>
+        <div class="content-card animate-fade-in delay-2">
+            <div class="content-card-header">
+                <h5 class="content-card-title">
+                    <i class="bi bi-graph-up"></i>
+                    Promedio General
+                </h5>
             </div>
-            <div class="card-body text-center">
-                <p class="display-3 fw-bold
-                    @if($promedioGeneral >= 4.0) text-success
-                    @elseif($promedioGeneral >= 3.0) text-warning
-                    @else text-danger
-                    @endif">
+            <div class="content-card-body text-center py-4">
+                @php
+                    $promedioClass = $promedioGeneral >= 4.0 ? 'success' : ($promedioGeneral >= 3.0 ? 'warning' : 'danger');
+                @endphp
+                <span class="badge-modern {{ $promedioClass }}" style="font-size: 1.5rem; padding: 0.75rem 1.5rem;">
                     {{ number_format($promedioGeneral, 2) }}/5.00
-                </p>
-                <p class="text-muted">Promedio de todas las calificaciones registradas</p>
+                </span>
+                <p class="text-muted mt-3 mb-0">Promedio de todas las calificaciones registradas</p>
             </div>
         </div>
     </div>
     <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-danger text-white">
-                <h5 class="mb-0">⚠️ Calificaciones Bajas</h5>
+        <div class="content-card animate-fade-in delay-3">
+            <div class="content-card-header">
+                <h5 class="content-card-title">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Calificaciones Bajas
+                </h5>
+                @if(!$calificacionesBajas->isEmpty())
+                    <span class="badge-modern danger">{{ $calificacionesBajas->count() }} alertas</span>
+                @endif
             </div>
-            <div class="card-body">
+            <div class="content-card-body p-0">
                 @if($calificacionesBajas->isEmpty())
-                    <p class="text-success">✓ No hay calificaciones por debajo de 3.0</p>
+                    <div class="text-center py-4">
+                        <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                        <p class="text-muted mt-2 mb-0">No hay calificaciones por debajo de 3.0</p>
+                    </div>
                 @else
-                    <p class="text-muted">{{ $calificacionesBajas->count() }} estudiantes con notas menores a 3.0</p>
                     <div class="table-responsive">
-                        <table class="table table-sm">
+                        <table class="modern-table">
                             <thead>
                                 <tr>
                                     <th>Estudiante</th>
@@ -86,7 +133,9 @@
                                 @foreach($calificacionesBajas as $cal)
                                     <tr>
                                         <td>{{ $cal->inscripcion->estudiante->nombre }}</td>
-                                        <td><span class="badge bg-danger">{{ number_format($cal->nota, 2) }}</span></td>
+                                        <td>
+                                            <span class="badge-modern danger">{{ number_format($cal->nota, 2) }}</span>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -98,104 +147,137 @@
     </div>
 </div>
 
-<!-- Datos Recientes -->
-<div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">👥 Estudiantes Recientes</h5>
+<!-- Recent Data -->
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="content-card animate-fade-in delay-3">
+            <div class="content-card-header">
+                <h5 class="content-card-title">
+                    <i class="bi bi-people"></i>
+                    Estudiantes Recientes
+                </h5>
             </div>
-            <div class="card-body">
+            <div class="content-card-body p-0">
                 @if($estudiantesRecientes->isEmpty())
-                    <p class="text-muted">No hay estudiantes registrados</p>
-                @else
-                    <div class="list-group list-group-flush">
-                        @foreach($estudiantesRecientes as $estudiante)
-                            <a href="{{ route('estudiantes.show', $estudiante->id) }}" class="list-group-item list-group-item-action">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-1">{{ $estudiante->nombre }} {{ $estudiante->apellido }}</h6>
-                                    <small class="text-muted">{{ $estudiante->created_at->diffForHumans() }}</small>
-                                </div>
-                                <p class="mb-0 small text-muted">{{ $estudiante->email }}</p>
-                            </a>
-                        @endforeach
+                    <div class="empty-state py-3">
+                        <p class="text-muted mb-0">No hay estudiantes registrados</p>
                     </div>
+                @else
+                    @foreach($estudiantesRecientes as $estudiante)
+                        <a href="{{ route('estudiantes.show', $estudiante->id) }}" class="d-flex align-items-center gap-3 p-3 border-bottom text-decoration-none text-dark hover-bg">
+                            <div class="user-avatar">
+                                {{ substr($estudiante->nombre, 0, 1) }}{{ substr($estudiante->apellido, 0, 1) }}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">{{ $estudiante->nombre }} {{ $estudiante->apellido }}</div>
+                                <small class="text-muted">{{ $estudiante->email }}</small>
+                            </div>
+                            <small class="text-muted">{{ $estudiante->created_at->diffForHumans() }}</small>
+                        </a>
+                    @endforeach
                 @endif
             </div>
         </div>
     </div>
-
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0">📚 Materias Más Inscritas</h5>
+    <div class="col-md-6">
+        <div class="content-card animate-fade-in delay-4">
+            <div class="content-card-header">
+                <h5 class="content-card-title">
+                    <i class="bi bi-book"></i>
+                    Materias Más Inscritas
+                </h5>
             </div>
-            <div class="card-body">
+            <div class="content-card-body p-0">
                 @if($materiasPopulares->isEmpty())
-                    <p class="text-muted">No hay materias registradas</p>
-                @else
-                    <div class="list-group list-group-flush">
-                        @foreach($materiasPopulares as $materia)
-                            <a href="{{ route('materias.show', $materia->id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                                <span>{{ $materia->nombre }}</span>
-                                <span class="badge bg-primary rounded-pill">{{ $materia->inscripciones_count }} inscritos</span>
-                            </a>
-                        @endforeach
+                    <div class="empty-state py-3">
+                        <p class="text-muted mb-0">No hay materias registradas</p>
                     </div>
+                @else
+                    @foreach($materiasPopulares as $materia)
+                        <a href="{{ route('materias.show', $materia->id) }}" class="d-flex align-items-center justify-content-between p-3 border-bottom text-decoration-none text-dark">
+                            <div>
+                                <div class="fw-semibold">{{ $materia->nombre }}</div>
+                                <small class="text-muted">{{ $materia->codigo }}</small>
+                            </div>
+                            <span class="badge-modern primary">{{ $materia->inscripciones_count }} inscritos</span>
+                        </a>
+                    @endforeach
                 @endif
             </div>
         </div>
     </div>
 </div>
 
-<!-- Inscripciones Recientes -->
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">📝 Inscripciones Recientes</h5>
+<!-- Recent Enrollments -->
+<div class="content-card mt-4 animate-fade-in delay-4">
+    <div class="content-card-header">
+        <h5 class="content-card-title">
+            <i class="bi bi-journal-bookmark"></i>
+            Inscripciones Recientes
+        </h5>
+    </div>
+    <div class="content-card-body p-0">
+        @if($inscripcionesRecientes->isEmpty())
+            <div class="empty-state py-4">
+                <i class="bi bi-journal-bookmark" style="font-size: 2rem;"></i>
+                <p class="text-muted mb-0 mt-2">No hay inscripciones registradas</p>
             </div>
-            <div class="card-body">
-                @if($inscripcionesRecientes->isEmpty())
-                    <p class="text-muted">No hay inscripciones registradas</p>
-                @else
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Estudiante</th>
-                                    <th>Materia</th>
-                                    <th>Fecha Inscripción</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($inscripcionesRecientes as $inscripcion)
-                                    <tr>
-                                        <td>{{ $inscripcion->estudiante->nombre }} {{ $inscripcion->estudiante->apellido }}</td>
-                                        <td>{{ $inscripcion->materia->nombre }}</td>
-                                        <td>{{ $inscripcion->fecha_inscripcion->format('d/m/Y') }}</td>
-                                        <td>
-                                            <span class="badge 
-                                                @if($inscripcion->estado === 'activa') bg-success
-                                                @elseif($inscripcion->estado === 'completada') bg-primary
-                                                @else bg-danger
-                                                @endif">
-                                                {{ ucfirst($inscripcion->estado) }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <a href="{{ route('inscripciones.show', $inscripcion->id) }}" class="btn btn-sm btn-info">Ver</a>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
+        @else
+            <div class="table-responsive">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Estudiante</th>
+                            <th>Materia</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th class="text-end">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($inscripcionesRecientes as $inscripcion)
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="user-avatar">
+                                            {{ substr($inscripcion->estudiante->nombre, 0, 1) }}
+                                        </div>
+                                        <span>{{ $inscripcion->estudiante->nombre }} {{ $inscripcion->estudiante->apellido }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ $inscripcion->materia->nombre }}</td>
+                                <td>{{ $inscripcion->fecha_inscripcion->format('d/m/Y') }}</td>
+                                <td>
+                                    @php
+                                        $estadoClass = match($inscripcion->estado) {
+                                            'activa' => 'success',
+                                            'completada' => 'info',
+                                            default => 'danger'
+                                        };
+                                    @endphp
+                                    <span class="badge-modern {{ $estadoClass }}">
+                                        {{ ucfirst($inscripcion->estado) }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{{ route('inscripciones.show', $inscripcion->id) }}" class="btn-modern btn-modern-info btn-modern-sm">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
-        </div>
+        @endif
     </div>
 </div>
+
+@push('styles')
+<style>
+    .hover-bg:hover {
+        background: linear-gradient(90deg, rgba(79, 70, 229, 0.04), transparent);
+    }
+</style>
+@endpush
 @endsection

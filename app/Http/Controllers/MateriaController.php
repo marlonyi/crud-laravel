@@ -2,66 +2,67 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreMateriaRequest;
+use App\Http\Requests\UpdateMateriaRequest;
 use App\Models\Materia;
-use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class MateriaController extends Controller
 {
-    public function index()
+    public function __construct()
     {
-        $materias = Materia::all();
-        return view('materias.index', compact('materias'));
+        $this->authorizeResource(Materia::class, 'materia');
     }
 
-    public function create()
+    public function index(): View
+    {
+        $materias = Materia::withCount('inscripciones')
+            ->latest()
+            ->paginate(15);
+        return view('materias.modern', compact('materias'));
+    }
+
+    public function create(): View
     {
         return view('materias.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreMateriaRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'nombre' => 'required|string|max:255',
-            'codigo' => 'required|string|unique:materias,codigo',
-            'creditos' => 'required|integer|min:1|max:10',
-            'descripcion' => 'nullable|string',
-            'horas_semana' => 'nullable|integer|min:1',
-            'profesor' => 'nullable|string|max:255',
-        ]);
-
-        Materia::create($validated);
-        return redirect()->route('materias.index')->with('success', 'Materia creada exitosamente');
+        Materia::create($request->validated());
+        return redirect()->route('materias.index')
+            ->with('success', 'Materia creada exitosamente');
     }
 
-    public function show(Materia $materia)
+    public function show(Materia $materia): View
     {
-        $materia->load('inscripciones.estudiante');
+        $materia->load(['inscripciones.estudiante', 'inscripciones.calificaciones']);
         return view('materias.show', compact('materia'));
     }
 
-    public function edit(Materia $materia)
+    public function edit(Materia $materia): View
     {
         return view('materias.edit', compact('materia'));
     }
 
-    public function update(Request $request, Materia $materia)
+    public function update(UpdateMateriaRequest $request, Materia $materia): RedirectResponse
     {
-        $validated = $request->validate([
-            'nombre' => 'required|string|max:255',
-            'codigo' => 'required|string|unique:materias,codigo,' . $materia->id,
-            'creditos' => 'required|integer|min:1|max:10',
-            'descripcion' => 'nullable|string',
-            'horas_semana' => 'nullable|integer|min:1',
-            'profesor' => 'nullable|string|max:255',
-        ]);
-
-        $materia->update($validated);
-        return redirect()->route('materias.index')->with('success', 'Materia actualizada exitosamente');
+        $materia->update($request->validated());
+        return redirect()->route('materias.index')
+            ->with('success', 'Materia actualizada exitosamente');
     }
 
-    public function destroy(Materia $materia)
+    public function destroy(Materia $materia): RedirectResponse
     {
-        $materia->delete();
-        return redirect()->route('materias.index')->with('success', 'Materia eliminada exitosamente');
+        try {
+            $materia->delete();
+            return redirect()->route('materias.index')
+                ->with('success', 'Materia eliminada exitosamente');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'No se puede eliminar la materia porque tiene registros relacionados');
+        }
     }
 }

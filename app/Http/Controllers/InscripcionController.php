@@ -2,74 +2,70 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\InscripcionCreada;
+use App\Http\Requests\StoreInscripcionRequest;
+use App\Http\Requests\UpdateInscripcionRequest;
 use App\Models\Inscripcion;
 use App\Models\Estudiante;
 use App\Models\Materia;
-use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class InscripcionController extends Controller
 {
-    public function index()
+    public function __construct()
     {
-        $inscripciones = Inscripcion::with(['estudiante', 'materia'])->get();
-        return view('inscripciones.index', compact('inscripciones'));
+        $this->authorizeResource(Inscripcion::class, 'inscripcion');
     }
 
-    public function create()
+    public function index(): View
     {
-        $estudiantes = Estudiante::all();
-        $materias = Materia::all();
+        $inscripciones = Inscripcion::with(['estudiante', 'materia'])
+            ->latest('fecha_inscripcion')
+            ->paginate(15);
+        return view('inscripciones.modern', compact('inscripciones'));
+    }
+
+    public function create(): View
+    {
+        $estudiantes = Estudiante::orderBy('nombre')->get();
+        $materias = Materia::orderBy('nombre')->get();
         return view('inscripciones.create', compact('estudiantes', 'materias'));
     }
 
-    public function store(Request $request)
+    public function store(StoreInscripcionRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'estudiante_id' => 'required|exists:estudiantes,id',
-            'materia_id' => 'required|exists:materias,id',
-            'fecha_inscripcion' => 'required|date',
-            'estado' => 'required|in:activa,completada,cancelada',
-        ]);
-
-        $existe = Inscripcion::where('estudiante_id', $validated['estudiante_id'])
-                             ->where('materia_id', $validated['materia_id'])
-                             ->exists();
-
-        if($existe) {
-            return redirect()->back()->withErrors(['error' => 'El estudiante ya está inscrito en esta materia']);
-        }
-
-        Inscripcion::create($validated);
-        return redirect()->route('inscripciones.index')->with('success', 'Inscripción creada exitosamente');
+        $inscripcion = Inscripcion::create($request->validated());
+        
+        event(new InscripcionCreada($inscripcion));
+        
+        return redirect()->route('inscripciones.index')
+            ->with('success', 'Inscripción creada exitosamente');
     }
 
-    public function show(Inscripcion $inscripcion)
+    public function show(Inscripcion $inscripcion): View
     {
         $inscripcion->load(['estudiante', 'materia', 'calificaciones']);
         return view('inscripciones.show', compact('inscripcion'));
     }
 
-    public function edit(Inscripcion $inscripcion)
+    public function edit(Inscripcion $inscripcion): View
     {
-        $estudiantes = Estudiante::all();
-        $materias = Materia::all();
-        return view('inscripciones.edit', compact('inscripcion', 'estudiantes', 'materias'));
+        return view('inscripciones.edit', compact('inscripcion'));
     }
 
-    public function update(Request $request, Inscripcion $inscripcion)
+    public function update(UpdateInscripcionRequest $request, Inscripcion $inscripcion): RedirectResponse
     {
-        $validated = $request->validate([
-            'fecha_inscripcion' => 'required|date',
-            'estado' => 'required|in:activa,completada,cancelada',
-        ]);
-
-        $inscripcion->update($validated);
-        return redirect()->route('inscripciones.index')->with('success', 'Inscripción actualizada exitosamente');
+        $inscripcion->update($request->validated());
+        return redirect()->route('inscripciones.index')
+            ->with('success', 'Inscripción actualizada exitosamente');
     }
 
-    public function destroy(Inscripcion $inscripcion)
+    public function destroy(Inscripcion $inscripcion): RedirectResponse
     {
         $inscripcion->delete();
-        return redirect()->route('inscripciones.index')->with('success', 'Inscripción eliminada exitosamente');
+        return redirect()->route('inscripciones.index')
+            ->with('success', 'Inscripción eliminada exitosamente');
     }
 }

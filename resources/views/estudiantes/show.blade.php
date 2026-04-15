@@ -1,72 +1,161 @@
 @extends('layout')
 
-@section('title', 'Ver Estudiante')
+@section('title', $estudiante->nombre . ' ' . $estudiante->apellido)
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelector('.delete-form')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            Swal.fire({
+                title: '¿Eliminar estudiante?',
+                text: "Esta acción no se puede deshacer",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>
+@endsection
 
 @section('content')
-<div class="row">
-    <div class="col-md-8 offset-md-2">
-        <h1>Detalles del Estudiante</h1>
+<!-- Page Header -->
+<div class="page-header animate-fade-in">
+    <div>
+        <h1 class="page-title">
+            <i class="bi bi-person-badge"></i>
+            {{ $estudiante->nombre }} {{ $estudiante->apellido }}
+        </h1>
+        <p class="page-subtitle">Detalles del estudiante</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ route('estudiantes.index') }}" class="btn-modern btn-modern-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
 
-        <div class="card mt-4">
-            <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <h5>Nombre:</h5>
-                        <p>{{ $estudiante->nombre }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>Apellido:</h5>
-                        <p>{{ $estudiante->apellido }}</p>
-                    </div>
+<!-- Info Card -->
+<div class="content-card animate-fade-in delay-1">
+    <div class="content-card-header">
+        <h5 class="content-card-title">
+            <i class="bi bi-person-vcard"></i>
+            Información Personal
+        </h5>
+        <div class="d-flex gap-2">
+            <a href="{{ route('estudiantes.edit', $estudiante->id) }}" class="btn-modern btn-modern-warning btn-modern-sm">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+        </div>
+    </div>
+    <div class="content-card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="bi bi-person"></i> Nombre
+                    </span>
+                    <span class="detail-value">{{ $estudiante->nombre }}</span>
                 </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <h5>Email:</h5>
-                        <p>{{ $estudiante->email }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>Cédula:</h5>
-                        <p>{{ $estudiante->cedula }}</p>
-                    </div>
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="bi bi-person"></i> Apellido
+                    </span>
+                    <span class="detail-value">{{ $estudiante->apellido }}</span>
                 </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <h5>Fecha de Nacimiento:</h5>
-                        <p>{{ $estudiante->fecha_nacimiento ? $estudiante->fecha_nacimiento->format('d/m/Y') : 'N/A' }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>Teléfono:</h5>
-                        <p>{{ $estudiante->telefono ?? 'N/A' }}</p>
-                    </div>
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="bi bi-envelope"></i> Email
+                    </span>
+                    <span class="detail-value">
+                        <a href="mailto:{{ $estudiante->email }}">{{ $estudiante->email }}</a>
+                    </span>
                 </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        <h5>Dirección:</h5>
-                        <p>{{ $estudiante->direccion ?? 'N/A' }}</p>
-                    </div>
+            </div>
+            <div class="col-md-6">
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="bi bi-card-text"></i> Cédula
+                    </span>
+                    <span class="detail-value">
+                        <code class="bg-light px-2 py-1 rounded">{{ $estudiante->cedula }}</code>
+                    </span>
                 </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        <small class="text-muted">
-                            Creado: {{ $estudiante->created_at->format('d/m/Y H:i') }}<br>
-                            Actualizado: {{ $estudiante->updated_at->format('d/m/Y H:i') }}
-                        </small>
-                    </div>
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="bi bi-calendar"></i> Fecha Nacimiento
+                    </span>
+                    <span class="detail-value">
+                        {{ $estudiante->fecha_nacimiento ? $estudiante->fecha_nacimiento->format('d/m/Y') : 'N/A' }}
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="bi bi-telephone"></i> Teléfono
+                    </span>
+                    <span class="detail-value">
+                        @if($estudiante->telefono)
+                            <a href="tel:{{ $estudiante->telefono }}">{{ $estudiante->telefono }}</a>
+                        @else
+                            <span class="badge-modern secondary">N/A</span>
+                        @endif
+                    </span>
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="bi bi-geo-alt"></i> Dirección
+                    </span>
+                    <span class="detail-value">{{ $estudiante->direccion ?? 'N/A' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        <div class="mt-4 d-flex gap-2">
-            <a href="{{ route('estudiantes.edit', $estudiante->id) }}" class="btn btn-warning">Editar</a>
-            <a href="{{ route('estudiantes.index') }}" class="btn btn-secondary">Volver</a>
-            <form method="POST" action="{{ route('estudiantes.destroy', $estudiante->id) }}" style="display:inline;">
+<!-- Timestamps Card -->
+<div class="content-card animate-fade-in delay-2">
+    <div class="content-card-body py-3">
+        <div class="d-flex gap-4 text-muted small">
+            <span>
+                <i class="bi bi-clock"></i> Creado: {{ $estudiante->created_at->format('d/m/Y H:i') }}
+            </span>
+            <span>
+                <i class="bi bi-arrow-repeat"></i> Actualizado: {{ $estudiante->updated_at->format('d/m/Y H:i') }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Actions Card -->
+<div class="content-card animate-fade-in delay-3">
+    <div class="content-card-body">
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ route('estudiantes.edit', $estudiante->id) }}" class="btn-modern btn-modern-warning">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            <a href="{{ route('estudiantes.index') }}" class="btn-modern btn-modern-secondary">
+                <i class="bi bi-list"></i> Ver Todos
+            </a>
+            <form method="POST" action="{{ route('estudiantes.destroy', $estudiante->id) }}" class="delete-form">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Está seguro de que desea eliminar este estudiante?')">Eliminar</button>
+                <button type="submit" class="btn-modern btn-modern-danger">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
             </form>
         </div>
     </div>

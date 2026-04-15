@@ -2,10 +2,17 @@
 
 namespace App\Models;
 
+use App\Services\GradeCalculationService;
+use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Estudiante extends Model
 {
+    use HasFactory, Auditable;
+
     protected $fillable = [
         'nombre',
         'apellido',
@@ -20,25 +27,41 @@ class Estudiante extends Model
         'fecha_nacimiento' => 'date',
     ];
 
-    public function inscripciones()
+    public function inscripciones(): HasMany
     {
         return $this->hasMany(Inscripcion::class);
     }
 
-    public function promedio_general()
+    public function getNombreCompletoAttribute(): string
     {
-        $inscripciones = $this->inscripciones()->with('calificaciones')->get();
-        $total_notas = 0;
-        $cantidad = 0;
-        
-        foreach($inscripciones as $inscripcion) {
-            $prom = $inscripcion->promedio();
-            if($prom) {
-                $total_notas += $prom;
-                $cantidad++;
-            }
-        }
-        
-        return $cantidad > 0 ? $total_notas / $cantidad : 0;
+        return "{$this->nombre} {$this->apellido}";
+    }
+
+    public function scopeBuscar(Builder $query, string $termino): Builder
+    {
+        return $query->where(function ($q) use ($termino) {
+            $q->where('nombre', 'like', "%{$termino}%")
+              ->orWhere('apellido', 'like', "%{$termino}%")
+              ->orWhere('email', 'like', "%{$termino}%")
+              ->orWhere('cedula', 'like', "%{$termino}%");
+        });
+    }
+
+    public function scopeRecientes(Builder $query, int $limit = 10): Builder
+    {
+        return $query->latest('created_at')->limit($limit);
+    }
+
+    public function scopeConPromedio(Builder $query): Builder
+    {
+        return $query->withCount(['inscripciones as promedio_general' => function (Builder $query): void {
+            $query->select(\DB::raw('ROUND(AVG(calificacions.nota), 2)'))
+                  ->join('calificacions', 'inscripcions.id', '=', 'calificacions.inscripcion_id');
+        }]);
+    }
+
+    public function promedioGeneral(): float
+    {
+        return app(GradeCalculationService::class)->calcularPromedioGeneral($this);
     }
 }
