@@ -13,8 +13,10 @@ use App\Http\Controllers\Api\V1\InscripcionController as ApiInscripcionControlle
 use App\Http\Controllers\Api\V1\CalificacionController as ApiCalificacionController;
 
 // Dashboard
-Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+Route::middleware('auth')->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+});
 
 // Audit Log
 Route::middleware('auth')->group(function () {
@@ -27,6 +29,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('materias', MateriaController::class);
     Route::resource('inscripciones', InscripcionController::class);
     Route::resource('calificaciones', CalificacionController::class);
+
+    // Chat API endpoint
+    Route::post('/api/chat/ask', [\App\Http\Controllers\ChatController::class, 'ask'])->name('chat.ask');
 });
 
 // API RESTful routes v1

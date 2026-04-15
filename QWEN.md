@@ -1,209 +1,358 @@
-# Sistema CRUD Universitario - Contexto QWEN
+# Sistema CRUD Universitario - QWEN Context
 
-## Descripción del Proyecto
+## Project Overview
 
-Este es un **Sistema de Gestión Universitaria CRUD** construido con **Laravel 12** y **PostgreSQL**. Proporciona una aplicación web completa para gestionar la información académica de una universidad, incluyendo estudiantes, materias, inscripciones y calificaciones con cálculo automático de promedios.
+This is a **University Management System (Sistema de Gestión Universitaria)** built with **Laravel 12** and **PostgreSQL**. It's a full-featured web application for managing academic information including students, courses, enrollments, and grades with automatic GPA calculation.
 
-### Características Principales
-- **4 Módulos CRUD**: Estudiantes, Materias, Inscripciones, Calificaciones
-- **Base de Datos Relacional**: Claves foráneas completas e integridad referencial
-- **Dashboard**: Estadísticas, alertas de bajo rendimiento, materias populares
-- **Cálculos Automáticos**: Promedio por curso y promedio general del estudiante
-- **Validación de Datos**: Prevención de duplicados, emails únicos, validación de rango de notas (0-5)
-- **UI Responsiva**: Bootstrap 5 con diseño moderno
+### Key Features
+- **4 CRUD Modules**: Students (Estudiantes), Courses (Materias), Enrollments (Inscripciones), Grades (Calificaciones)
+- **AI Chatbot**: Integrated Groq-powered chat assistant for querying database in natural language (Spanish)
+- **RESTful API**: Versioned API (v1) with Sanctum authentication
+- **Dashboard**: Statistics, low-performance alerts, popular courses, recent activity
+- **Automatic Calculations**: Per-enrollment GPA and overall student GPA
+- **Audit Trail**: Complete audit log tracking all CRUD operations
+- **Data Validation**: Unique emails/IDs, no duplicate enrollments, grade range (0-5)
+- **Responsive UI**: Bootstrap 5 with modern design
 
-## Tecnologías
+### Technical Stack
 
-| Tecnología | Versión | Propósito |
-|-----------|---------|----------|
-| Laravel | 12.56.0 | Framework PHP para desarrollo web |
-| PHP | 8.2+ | Lenguaje del Backend |
-| PostgreSQL | 12+ | Base de datos |
-| Blade | (Laravel) | Motor de plantillas |
-| Bootstrap | 5.3.0 | Framework CSS |
-| Vite | 7.3.2 | Herramienta de compilación frontend |
-| Tailwind CSS | 4.0.0 | CSS utilitario |
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| Laravel | 12.56.0 | PHP web framework |
+| PHP | 8.2+ | Backend language |
+| PostgreSQL | 12+ | Relational database |
+| Blade | (Laravel) | Template engine |
+| Bootstrap | 5.3.0 | CSS framework |
+| Vite | 7.3.2 | Frontend build tool |
+| Tailwind CSS | 4.0.0 | Utility CSS |
+| Alpine.js | 3.4.2 | Lightweight JS framework |
+| Groq API | Mixtral 8x7b | AI chatbot LLM |
+| Laravel Sanctum | 4.3 | API authentication |
 
-## Estructura del Proyecto
+---
+
+## Project Structure
 
 ```
 crud-laravel/
 ├── app/
-│   ├── Http/Controllers/
-│   │   ├── DashboardController.php
-│   │   ├── EstudianteController.php
-│   │   ├── MateriaController.php
-│   │   ├── InscripcionController.php
-│   │   └── CalificacionController.php
-│   └── Models/
-│       ├── Estudiante.php
-│       ├── Materia.php
-│       ├── Inscripcion.php
-│       └── Calificacion.php
-├── database/migrations/
-│   ├── 2026_04_13_202124_create_estudiantes_table.php
-│   ├── 2026_04_14_173831_create_materias_table.php
-│   ├── 2026_04_14_173832_create_inscripcions_table.php
-│   └── 2026_04_14_173833_create_calificacions_table.php
-├── resources/views/
-│   ├── layout.blade.php
-│   ├── dashboard/index.blade.php
-│   ├── estudiantes/{index,create,edit,show}.blade.php
-│   ├── materias/{index,create,edit,show}.blade.php
-│   ├── inscripciones/{index,create,edit,show}.blade.php
-│   └── calificaciones/{index,create,edit,show}.blade.php
-├── routes/web.php
-├── composer.json
-├── package.json
-└── vite.config.js
+│   ├── Enums/                          # Status/type enums
+│   │   ├── CalificacionTipo.php        # Grade types (Parcial, Final, etc)
+│   │   └── InscripcionEstado.php       # Enrollment states (activa, completada, cancelada)
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── Api/V1/                 # API controllers (RESTful)
+│   │   │   ├── Auth/                   # Authentication controllers
+│   │   │   ├── AuditController.php     # Audit log controller
+│   │   │   ├── ChatController.php      # AI chatbot controller
+│   │   │   ├── DashboardController.php # Dashboard controller
+│   │   │   └── [Resource Controllers]  # CRUD controllers
+│   │   └── Requests/                   # Form request validation
+│   ├── Models/                         # Eloquent models
+│   │   ├── Audit.php                   # Audit log model
+│   │   ├── Calificacion.php            # Grade model
+│   │   ├── Estudiante.php              # Student model
+│   │   ├── Inscripcion.php             # Enrollment model
+│   │   ├── Materia.php                 # Course model
+│   │   └── User.php                    # User model
+│   ├── Services/                       # Business logic services
+│   │   ├── DashboardService.php        # Dashboard statistics
+│   │   ├── GradeCalculationService.php # GPA calculations
+│   │   └── GroqService.php             # AI chatbot integration
+│   ├── Traits/
+│   │   └── Auditable.php               # Audit trail trait
+│   └── View/                           # View components
+├── database/migrations/                # Database schema
+├── resources/views/                    # Blade templates
+│   ├── components/                     # Reusable components
+│   │   └── chat-widget.blade.php       # AI chat bubble
+│   ├── layouts/                        # Layout templates
+│   ├── [module]/                       # Module-specific views
+│   └── dashboard/                      # Dashboard views
+├── routes/
+│   ├── web.php                         # Web routes
+│   └── auth.php                        # Authentication routes
+├── tests/                              # PHPUnit tests
+├── config/                             # Laravel configuration
+├── public/                             # Public assets
+└── storage/                            # File storage
 ```
 
-## Esquema de la Base de Datos
+---
 
-### Modelos y Relaciones
+## Database Schema
 
-- **Estudiante**
-  - hasMany → Inscripcion
-  - Método: `promedio_general()` - calcula el GPA general del estudiante
-  
-- **Materia**
-  - hasMany → Inscripcion
-  
-- **Inscripcion**
-  - belongsTo → Estudiante
-  - belongsTo → Materia
-  - hasMany → Calificacion
-  - Método: `promedio()` - calcula el promedio de notas por inscripción
-  
-- **Calificacion**
-  - belongsTo → Inscripcion
+### Models & Relationships
 
-### Restricciones Clave
-- Emails y cédulas únicos para estudiantes
-- Códigos de materia únicos (ej: MAT101, FIS201)
-- Prevención de inscripciones duplicadas (restricción única en estudiante+materia)
-- Rango de notas: 0.00 - 5.00
+```
+Estudiante (Student)
+├── hasMany → Inscripcion
+├── Methods: promedio_general(), nombre_completo (accessor)
+└── Scopes: buscar(), recientes(), conPromedio()
 
-## Construcción y Ejecución
+Materia (Course)
+├── hasMany → Inscripcion
+└── Unique: codigo (e.g., MAT101)
 
-### Requisitos Previos
+Inscripcion (Enrollment)
+├── belongsTo → Estudiante
+├── belongsTo → Materia
+├── hasMany → Calificacion
+├── Methods: promedio(), esActiva(), estaCompletada()
+├── Scopes: activas(), completadas(), canceladas()
+└── Enum: estado (InscripcionEstado)
+
+Calificacion (Grade)
+├── belongsTo → Inscripcion
+├── Validation: nota (0.00 - 5.00)
+└── Enum: tipo (CalificacionTipo)
+
+Audit (Audit Log)
+├── tracks: created, updated, deleted actions
+├── stores: old_values, new_values, user_id, ip_address
+└── Applied via: Auditable trait on models
+```
+
+### Key Database Constraints
+- **Unique**: student email, student cedula (ID), course codigo
+- **Foreign Keys**: inscripcion → estudiante, inscripcion → materia, calificacion → inscripcion
+- **Unique Composite**: estudiante_id + materia_id (prevent duplicate enrollments)
+- **Check**: nota range 0-5
+
+---
+
+## Building and Running
+
+### Prerequisites
 - PHP 8.2+
 - Composer
 - Node.js 20.x LTS+
 - PostgreSQL 12+
 
-### Comandos de Configuración
+### Initial Setup
 
 ```bash
-# Instalar dependencias PHP
+# Install PHP dependencies
 composer install
 
-# Copiar y configurar .env (ya configurado para PostgreSQL)
-# Base de datos por defecto: crud-laravel, Usuario: postgres, Contraseña: 123456789
+# Copy and configure .env (PostgreSQL already configured)
+# Database: crud-laravel, User: postgres, Password: 123456789
 
-# Generar clave de aplicación
+# Generate application key
 php artisan key:generate
 
-# Ejecutar migraciones de base de datos
+# Run database migrations
 php artisan migrate
 
-# Instalar dependencias de Node.js
+# Install Node dependencies
 npm install
 
-# Iniciar servidor de desarrollo (ejecuta servidor PHP, queue worker y Vite)
+# Start development server (PHP server, queue worker, and Vite)
 composer run dev
 ```
 
-**Accede a la aplicación en:** http://localhost:8000
+**Access the application at:** http://localhost:8000
 
-### Comandos Útiles
+### Common Commands
 
 ```bash
-# Ejecutar pruebas
+# Run tests
 composer run test
 
-# Compilar assets del frontend
+# Build frontend assets
 npm run build
 
-# Limpiar caché de configuración
+# Clear configuration cache
 php artisan config:clear
 
-# Configuración completa (instalar, migrar, compilar)
+# Full setup (install, migrate, build)
 composer run setup
+
+# Start development server
+composer run dev
 ```
 
-## Rutas
+### Available Scripts (composer.json)
+
+| Command | Description |
+|---------|-------------|
+| `composer run setup` | Full setup: install deps, generate key, migrate, npm install, build |
+| `composer run dev` | Start dev server (PHP, queue, Vite) |
+| `composer run test` | Clear config and run tests |
+
+---
+
+## Routes
 
 ### Dashboard
-- `GET /` → DashboardController@index
-- `GET /dashboard` → DashboardController@index
+- `GET /` → DashboardController@index (authenticated)
+- `GET /dashboard` → DashboardController@index (authenticated)
 
-### Recursos CRUD (28 rutas en total)
-Cada módulo sigue el patrón RESTful:
-- `GET /{recurso}` → index (listar todos)
-- `GET /{recurso}/create` → create (formulario)
-- `POST /{recurso}` → store (guardar)
-- `GET /{recurso}/{id}` → show (detalles)
-- `GET /{recurso}/{id}/edit` → edit (formulario)
-- `PUT /{recurso}/{id}` → update (actualizar)
-- `DELETE /{recurso}/{id}` → destroy (eliminar)
+### CRUD Resources (4 modules × 7 routes = 28 routes)
+All resources follow standard RESTful pattern with `auth` middleware:
 
-Recursos: `estudiantes`, `materias`, `inscripciones`, `calificaciones`
+| Resource | Base URL | Controller |
+|----------|----------|------------|
+| Students | `/estudiantes` | EstudianteController |
+| Courses | `/materias` | MateriaController |
+| Enrollments | `/inscripciones` | InscripcionController |
+| Grades | `/calificaciones` | CalificacionController |
 
-## Convenciones de Desarrollo
+Standard routes per resource:
+- `GET /{resource}` → index (list all)
+- `GET /{resource}/create` → create (form)
+- `POST /{resource}` → store (save)
+- `GET /{resource}/{id}` → show (details)
+- `GET /{resource}/{id}/edit` → edit (form)
+- `PUT /{resource}/{id}` → update (save)
+- `DELETE /{resource}/{id}` → destroy (delete)
 
-### Estilo de Código
-- Convenciones estándar de Laravel
-- Autocarga PSR-4
-- Eloquent ORM para operaciones de base de datos
-- Controladores de recursos para operaciones CRUD
+### Audit Log
+- `GET /audits` → AuditController@index
+- `GET /audits/{id}` → AuditController@show
 
-### Validación
-- Validación a nivel de controlador con Laravel Validator
-- Restricciones a nivel de base de datos (únicos, claves foráneas)
-- Mensajes de error personalizados en español
+### API Endpoints (v1)
+Prefix: `/api/v1` with `auth:sanctum` middleware:
+- `GET/POST/PUT/DELETE /api/v1/estudiantes`
+- `GET/POST/PUT/DELETE /api/v1/materias`
+- `GET/POST/PUT/DELETE /api/v1/inscripciones`
+- `GET/POST/PUT/DELETE /api/v1/calificaciones`
 
-### Vistas
-- Motor de plantillas Blade
-- Bootstrap 5 para diseño responsivo
-- Layout compartido con barra de navegación
-- Codificación de colores dinámica (verde ≥4.0, naranja ≥3.0, rojo <3.0)
+### Chat
+- `POST /api/chat/ask` → ChatController@ask (authenticated)
 
-### Pruebas
-- PHPUnit para pruebas unitarias
-- Directorio tests para archivos de prueba
+---
 
-## Notas de Configuración
+## Development Conventions
 
-- Base de datos: PostgreSQL (configurado en .env)
-- Sesiones: Driver de base de datos
-- Caché: Driver de base de datos
-- Colas: Driver de base de datos
-- Sistema de archivos: Almacenamiento local
-- Correo: Driver de registro (desarrollo)
+### Code Style
+- Laravel conventions with PSR-4 autoloading
+- Eloquent ORM for database operations
+- Resource controllers for CRUD operations
+- Form Request classes for validation
+- Policy-based authorization
+- Service classes for business logic
+- Traits for shared functionality (e.g., Auditable)
 
-## Lógica de Negocio Clave
+### Architecture Patterns
+- **Services**: Business logic separated from controllers (e.g., GradeCalculationService, GroqService)
+- **Enums**: Type-safe status values (InscripcionEstado, CalificacionTipo)
+- **Traits**: Reusable behavior (Auditable trait logs all model changes)
+- **Scopes**: Query scopes for common queries (recientes, activas, etc.)
+- **Policies**: Resource-level authorization
+- **Form Requests**: Validation in dedicated request classes
 
-1. **Cálculo de Calificaciones**: Los promedios se calculan automáticamente desde los registros de notas relacionados
-2. **Prevención de Inscripciones**: Las inscripciones duplicadas se bloquean a nivel de base de datos
-3. **Eliminación en Cascada**: Eliminar una inscripción elimina las calificaciones asociadas
-4. **Seguimiento de Estado**: Las inscripciones rastrean estado (activa/completada/cancelada)
-5. **Analíticas del Dashboard**: Muestra estudiantes de bajo rendimiento, materias populares, actividad reciente
+### Validation
+- Laravel Form Request classes
+- Database-level constraints (unique, foreign keys, check constraints)
+- Custom error messages in Spanish
 
-## Archivos Importantes
+### Views
+- Blade template engine
+- Bootstrap 5 for responsive design
+- Shared layout with navbar
+- Dynamic color coding (green ≥4.0, orange ≥3.0, red <3.0)
+- Alpine.js for interactive components
+- Chat widget component (floating bubble)
 
-- `routes/web.php` - Todas las definiciones de rutas
-- `app/Models/*.php` - Modelos Eloquent con relaciones
-- `app/Http/Controllers/*.php` - Controladores de recursos
-- `resources/views/layout.blade.php` - Layout maestro
-- `database/migrations/` - Definiciones del esquema de base de datos
+### Testing
+- PHPUnit for unit and feature tests
+- Separate test suites: Unit and Feature
+- SQLite in-memory database for testing
+- Tests directory: `tests/Unit` and `tests/Feature`
 
-## Idioma del Proyecto
+---
 
-**Este proyecto utiliza español como idioma principal.** Todas las interacciones, respuestas, documentación y comunicación deben realizarse en **español**.
+## Key Business Logic
 
-- Nombres de variables, métodos y clases pueden estar en español (ej: `Estudiante`, `promedio_general`, `fecha_inscripcion`)
-- Mensajes de validación y errores en español
-- Documentación y comentarios en español
-- Interfaz de usuario completamente en español
+1. **Grade Calculation**: GPAs calculated automatically via GradeCalculationService using optimized SQL queries
+2. **Enrollment Prevention**: Duplicate enrollments blocked at database level (unique constraint)
+3. **Cascade Deletion**: Deleting an enrollment deletes associated grades
+4. **State Tracking**: Enrollments track state (activa/completada/cancelada) via enum
+5. **Audit Trail**: All CRUD operations logged automatically via Auditable trait
+6. **AI Chatbot**: Groq-powered assistant answers natural language queries about database
+7. **Dashboard Analytics**: Low-performing students, popular courses, recent activity
 
+---
+
+## Configuration
+
+- **Database**: PostgreSQL (configured in .env)
+- **Sessions**: Database driver
+- **Cache**: Database driver
+- **Queues**: Database driver
+- **File Storage**: Local
+- **Mail**: Log driver (development)
+- **API Auth**: Laravel Sanctum
+
+---
+
+## Environment Variables (.env)
+
+Key variables to configure:
+```env
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=crud-laravel
+DB_USERNAME=postgres
+DB_PASSWORD=123456789
+
+GROQ_API_KEY=your-groq-api-key  # For AI chatbot
+```
+
+---
+
+## Additional Features
+
+### AI Chatbot (Database AI Chat)
+- **Location**: Floating bubble in bottom-left corner (authenticated pages)
+- **Language**: Spanish responses
+- **Powered by**: Groq API (Mixtral 8x7b)
+- **Capabilities**: Answer questions about students, courses, grades, enrollments, audit logs
+- **Setup**: Add GROQ_API_KEY to .env file
+- **Documentation**: See CHATBOT.md for full details
+
+### Audit System
+- Automatic logging of all create, update, delete operations
+- Tracks: user, action, old/new values, IP address, user agent
+- Accessible via `/audits` route
+- Applied through Auditable trait on models
+
+### API (v1)
+- RESTful API with Sanctum authentication
+- Versioned under `/api/v1` prefix
+- Covers all 4 main resources
+- JSON responses
+
+---
+
+## Important Files
+
+- `routes/web.php` - All web route definitions
+- `app/Models/*.php` - Eloquent models with relationships
+- `app/Http/Controllers/*.php` - Resource controllers
+- `app/Services/GradeCalculationService.php` - GPA calculation logic
+- `app/Services/GroqService.php` - AI chatbot integration
+- `app/Traits/Auditable.php` - Audit trail implementation
+- `resources/views/layout.blade.php` - Master layout
+- `database/migrations/` - Database schema definitions
+- `composer.json` - PHP dependencies and scripts
+- `package.json` - Node dependencies and build scripts
+- `.env` - Environment configuration
+
+---
+
+## Language Note
+
+**This project uses Spanish as its primary language.**
+- Model names, methods, and variables may be in Spanish (e.g., `Estudiante`, `promedio_general`, `fecha_inscripcion`)
+- Validation and error messages are in Spanish
+- User interface is entirely in Spanish
+- AI chatbot responds in Spanish
+
+---
+
+**Last Updated:** April 15, 2026
+**Laravel Version:** 12.56.0
+**PHP Version:** 8.2+

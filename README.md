@@ -138,7 +138,7 @@ DB_HOST=127.0.0.1
 DB_PORT=5432
 DB_DATABASE=crud-laravel
 DB_USERNAME=postgres
-DB_PASSWORD=123456789
+DB_PASSWORD=12345678
 ```
 
 **Asegúrate de que:**
@@ -522,6 +522,182 @@ GROUP BY e.id, e.nombre, e.apellido, e.cedula, m.id, m.nombre, m.codigo, m.credi
 ORDER BY m.nombre;
 ```
 **Descripción:** Genera una transcripción académica completa de un estudiante específico con créditos.
+
+---
+
+#### 14. 🔐 Log de auditoría - Últimas acciones
+```sql
+SELECT 
+    a.id,
+    u.name AS usuario,
+    a.action AS accion,
+    a.auditable_type AS tipo_entidad,
+    a.auditable_id AS id_entidad,
+    a.created_at AS fecha_accion,
+    a.ip_address AS ip
+FROM audits a
+LEFT JOIN users u ON a.user_id = u.id
+ORDER BY a.created_at DESC
+LIMIT 50;
+```
+**Descripción:** Muestra los últimos 50 cambios registrados en el sistema (creaciones, actualizaciones, eliminaciones) con quién los hizo y cuándo.
+
+---
+
+#### 15. 📝 Cambios realizados por un usuario
+```sql
+SELECT 
+    a.id,
+    a.action AS accion,
+    a.auditable_type AS tipo_entidad,
+    a.auditable_id AS id_entidad,
+    a.old_values AS valores_anteriores,
+    a.new_values AS valores_nuevos,
+    a.created_at AS fecha
+FROM audits a
+WHERE a.user_id = 1  -- Cambiar por ID del usuario
+ORDER BY a.created_at DESC;
+```
+**Descripción:** Historial completo de cambios hechos por un usuario específico.
+
+---
+
+#### 16. 🔍 Cambios en una entidad específica (estudiante, materia, etc)
+```sql
+SELECT 
+    a.id,
+    u.name AS usuario,
+    a.action AS accion,
+    a.old_values AS valores_anteriores,
+    a.new_values AS valores_nuevos,
+    a.created_at AS fecha,
+    a.ip_address AS ip
+FROM audits a
+LEFT JOIN users u ON a.user_id = u.id
+WHERE a.auditable_type = 'App\\Models\\Estudiante' 
+  AND a.auditable_id = 1  -- Cambiar por ID del estudiante
+ORDER BY a.created_at DESC;
+```
+**Descripción:** Historial de todos los cambios realizados en un registro específico (ej: un estudiante).
+
+---
+
+#### 17. 📊 Resumen de calificaciones por materia
+```sql
+SELECT 
+    m.id,
+    m.nombre AS materia,
+    m.codigo,
+    m.profesor,
+    COUNT(c.id) AS total_calificaciones,
+    ROUND(AVG(c.nota)::numeric, 2) AS promedio_materia,
+    ROUND(MIN(c.nota)::numeric, 2) AS nota_minima,
+    ROUND(MAX(c.nota)::numeric, 2) AS nota_maxima,
+    COUNT(DISTINCT i.estudiante_id) AS estudiantes_con_calificaciones
+FROM materias m
+LEFT JOIN inscripcions i ON m.id = i.materia_id
+LEFT JOIN calificacions c ON i.id = c.inscripcion_id
+GROUP BY m.id, m.nombre, m.codigo, m.profesor
+ORDER BY promedio_materia DESC;
+```
+**Descripción:** Estadísticas completas de desempeño por materia.
+
+---
+
+#### 18. 🎯 Estudiantes en riesgo académico (promedio < 2.5)
+```sql
+SELECT 
+    e.id,
+    e.nombre || ' ' || e.apellido AS estudiante,
+    e.email,
+    e.cedula,
+    COUNT(i.id) AS total_materias,
+    ROUND(AVG(c.nota)::numeric, 2) AS promedio_general,
+    COUNT(CASE WHEN c.nota < 3.0 THEN 1 END) AS materias_desaprobadas
+FROM estudiantes e
+LEFT JOIN inscripcions i ON e.id = i.estudiante_id
+LEFT JOIN calificacions c ON i.id = c.inscripcion_id
+GROUP BY e.id, e.nombre, e.apellido, e.email, e.cedula
+HAVING AVG(c.nota) < 2.5
+ORDER BY promedio_general ASC;
+```
+**Descripción:** Identifica estudiantes en riesgo académico con promedio inferior a 2.5.
+
+---
+
+#### 19. 📈 Distribución de calificaciones por rango
+```sql
+SELECT 
+    CASE 
+        WHEN nota >= 4.5 THEN 'Excelente (4.5-5.0)'
+        WHEN nota >= 4.0 THEN 'Muy Bueno (4.0-4.4)'
+        WHEN nota >= 3.5 THEN 'Bueno (3.5-3.9)'
+        WHEN nota >= 3.0 THEN 'Satisfecho (3.0-3.4)'
+        ELSE 'Desaprobado (0-2.9)'
+    END AS rango_calificacion,
+    COUNT(*) AS cantidad,
+    ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER(), 2) AS porcentaje
+FROM calificacions
+GROUP BY rango_calificacion
+ORDER BY nota DESC;
+```
+**Descripción:** Muestra la distribución porcentual de calificaciones por rangos de desempeño.
+
+---
+
+#### 20. 🔔 Inscripciones sin calificaciones
+```sql
+SELECT 
+    i.id,
+    e.nombre || ' ' || e.apellido AS estudiante,
+    m.nombre AS materia,
+    i.fecha_inscripcion,
+    i.estado,
+    COUNT(c.id) AS total_calificaciones
+FROM inscripcions i
+JOIN estudiantes e ON i.estudiante_id = e.id
+JOIN materias m ON i.materia_id = m.id
+LEFT JOIN calificacions c ON i.id = c.inscripcion_id
+GROUP BY i.id, e.nombre, e.apellido, m.nombre, i.fecha_inscripcion, i.estado
+HAVING COUNT(c.id) = 0 AND i.estado = 'activa'
+ORDER BY i.fecha_inscripcion DESC;
+```
+**Descripción:** Inscripciones activas que aún no tienen calificaciones registradas.
+
+---
+
+#### 21. 👥 Comparativa de desempeño entre estudiantes
+```sql
+SELECT 
+    e.nombre || ' ' || e.apellido AS estudiante,
+    COUNT(DISTINCT i.materia_id) AS materias_inscritas,
+    ROUND(AVG(c.nota)::numeric, 2) AS promedio_general,
+    COUNT(CASE WHEN c.nota >= 4.0 THEN 1 END) AS aprobadas_con_honores,
+    COUNT(CASE WHEN c.nota >= 3.0 AND c.nota < 4.0 THEN 1 END) AS aprobadas_normal,
+    COUNT(CASE WHEN c.nota < 3.0 THEN 1 END) AS desaprobadas
+FROM estudiantes e
+LEFT JOIN inscripcions i ON e.id = i.estudiante_id
+LEFT JOIN calificacions c ON i.id = c.inscripcion_id
+GROUP BY e.id, e.nombre, e.apellido
+HAVING COUNT(c.id) > 0
+ORDER BY promedio_general DESC;
+```
+**Descripción:** Comparativa completa del desempeño académico de todos los estudiantes.
+
+---
+
+#### 22. 📅 Actividad más reciente por tipo de entidad
+```sql
+SELECT 
+    a.auditable_type AS tipo_entidad,
+    a.action AS accion,
+    COUNT(*) AS total_cambios,
+    MAX(a.created_at) AS ultima_actividad
+FROM audits a
+GROUP BY a.auditable_type, a.action
+ORDER BY ultima_actividad DESC;
+```
+**Descripción:** Resumen de la actividad más reciente en el sistema por tipo de entidad.
 
 ---
 

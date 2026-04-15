@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('materia_id')->constrained('materias')->onDelete('cascade');
             $table->date('fecha_inscripcion');
             $table->string('estado')->default('activa'); // activa, completada, cancelada
+            $table->decimal('promedio', 3, 2)->default(0); // promedio de calificaciones
             $table->timestamps();
             $table->unique(['estudiante_id', 'materia_id']);
         });
